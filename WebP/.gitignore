@@ -1,0 +1,7 @@
+# Generated PGP keys — never commit private key material.
+scripts/keys/
+
+# Python virtualenv created by scripts/install.sh
+scripts/.venv/
+__pycache__/
+*.pyc

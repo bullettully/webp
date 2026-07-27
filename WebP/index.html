@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Segment Player</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="vendor/openpgp.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <h1>Segment Player</h1>
+    <p class="subtitle">Paste a list of video segment links or local filenames (one per line, in play order). Google Drive share links are auto-converted; plain filenames/paths are matched against a local folder you open; files ending in .gpg/.pgp/.asc are decrypted in memory. Segments are downloaded (or read) to memory and played back-to-back.</p>
+
+    <section class="panel">
+      <h2>PGP-encrypted segments</h2>
+      <p class="hint">Files ending in <code>.gpg</code>, <code>.pgp</code>, or <code>.asc</code> are treated as PGP-encrypted and decrypted in memory with the key below before playback. The key, passphrase, and decrypted video data are never written to disk, localStorage, or sent anywhere — they exist only in this tab's memory for this session, and are gone on reload or when you click Clear Key.</p>
+
+      <label for="pgpKeyFile">Private key file</label>
+      <input type="file" id="pgpKeyFile" accept=".asc,.key,.pgp,.gpg,.txt">
+
+      <label for="pgpKeyB64">...or paste base64-encoded private key (either base64 of the armored text, or of the raw key — both are detected automatically)</label>
+      <textarea id="pgpKeyB64" rows="3" placeholder="Base64-encoded private key, e.g. output of: base64 -w0 private-key.asc"></textarea>
+
+      <div class="playlist-row">
+        <input id="pgpPassphrase" type="password" placeholder="Passphrase" style="flex:1">
+        <button id="pgpLoadKeyBtn" class="primary">Load Key</button>
+        <button id="pgpClearKeyBtn" class="danger">Clear Key</button>
+      </div>
+      <p id="pgpKeyStatus" class="hint">No key loaded</p>
+    </section>
+
+    <section class="panel">
+      <h2>Import from Google Drive folder</h2>
+      <p class="hint">Requires a Google Cloud OAuth Client ID (Web application type) with your app's origin added under Authorized JavaScript origins, and the Drive API enabled on that project. The client ID is not secret and is saved locally for convenience; access tokens are kept in memory only for this tab session.</p>
+
+      <label for="clientIdInput">OAuth Client ID</label>
+      <input id="clientIdInput" type="text" placeholder="xxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com" style="width:100%">
+
+      <div class="actions-row">
+        <button id="signInBtn">Sign in with Google</button>
+        <span id="authStatus" class="progress-label">Not signed in</span>
+      </div>
+
+      <div class="playlist-row">
+        <input id="folderInput" type="text" placeholder="Drive folder link or ID" style="flex:1">
+        <button id="importFolderBtn" class="primary" disabled>Import Folder</button>
+      </div>
+      <p id="importStatus" class="hint"></p>
+    </section>
+
+    <section class="panel">
+      <label for="linksInput">Segment links</label>
+      <textarea id="linksInput" rows="8" placeholder="https://drive.google.com/file/d/XXXX/view
+https://example.com/segment2.mp4
+clips/segment3.mp4
+segment4.mp4"></textarea>
+
+      <div class="playlist-row">
+        <input id="playlistName" type="text" placeholder="Playlist name">
+        <button id="saveBtn">Save</button>
+        <select id="savedSelect">
+          <option value="">Saved playlists…</option>
+        </select>
+        <button id="loadBtn">Load</button>
+        <button id="deleteBtn" class="danger">Delete</button>
+      </div>
+
+      <div class="actions-row">
+        <button id="chooseFolderBtn">Open Local Folder</button>
+        <input type="file" id="folderPicker" webkitdirectory directory multiple style="display:none">
+        <span id="localFolderStatus" class="progress-label">No local folder selected</span>
+      </div>
+      <p class="hint">Plain filenames or relative paths (no <code>http(s)://</code>) in the list above are treated as local files and matched by name/path against whatever folder you open here.</p>
+
+      <div class="actions-row">
+        <button id="buildBtn" class="primary">Load into Player</button>
+      </div>
+    </section>
+
+    <section class="panel player-panel">
+      <div id="videoStage" class="video-stage">
+        <video id="videoA" class="video-layer" playsinline></video>
+        <video id="videoB" class="video-layer" playsinline></video>
+        <div id="stageOverlay" class="stage-overlay">No playlist loaded</div>
+      </div>
+
+      <div class="controls-row">
+        <button id="playBtn" disabled>Play</button>
+        <button id="pauseBtn" disabled>Pause</button>
+        <button id="stopBtn" disabled>Stop</button>
+        <span id="progressLabel" class="progress-label"></span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Segments</h2>
+      <ol id="segmentList" class="segment-list"></ol>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
