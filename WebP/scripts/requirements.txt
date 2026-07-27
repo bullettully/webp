@@ -1,0 +1,4 @@
+pgpy
+# Python 3.13+ removed the stdlib `imghdr` module that pgpy imports;
+# this backport restores it. Harmless to install on older Python too.
+standard-imghdr
